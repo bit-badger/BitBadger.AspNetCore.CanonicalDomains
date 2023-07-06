@@ -14,18 +14,31 @@ public static class IApplicationBuilderExtensions
     /// </summary>
     public static IApplicationBuilder UseCanonicalDomains(this IApplicationBuilder app)
     {
-        void warnForMissingConfig() {
-            var logger = (ILogger<CanonicalDomainMiddleware>?)app.ApplicationServices
-                .GetService(typeof(ILogger<CanonicalDomainMiddleware>));
-            if (logger is not null)
-            {
-                logger.LogWarning("No canonical domain configuration was found; no domains will be redirected");
-            }
+        ParseConfiguration(GetService<IConfiguration>(app)!.GetSection("CanonicalDomains"));
+
+        if (CanonicalDomainMiddleware.CanonicalDomains.Count > 0)
+        {
+            return app.UseMiddleware<CanonicalDomainMiddleware>();
         }
+        
+        WarnForMissingConfig(app);
+        return app;
+    }
 
-        var config = (IConfiguration)app.ApplicationServices.GetService(typeof(IConfiguration))!;
-
-        var section = config.GetSection("CanonicalDomains");
+    /// <summary>
+    /// Shorthand for retrieving typed services from the application's service provider
+    /// </summary>
+    /// <param name="app">The application builder</param>
+    /// <returns>The requested service, or null if it was not able to be found</returns>
+    private static T? GetService<T>(IApplicationBuilder app) =>
+        (T?)app.ApplicationServices.GetService(typeof(T));
+    
+    /// <summary>
+    /// Extract the from/to domain paris from the configuration
+    /// </summary>
+    /// <param name="section">The <tt>CanonicalDomains</tt> configuration section</param>
+    private static void ParseConfiguration(IConfigurationSection? section)
+    {
         if (section is not null)
         {
             foreach (var item in section.GetChildren())
@@ -37,21 +50,19 @@ public static class IApplicationBuilderExtensions
                     CanonicalDomainMiddleware.CanonicalDomains.Add(nonCanonical, canonical);
                 }
             }
+        }
+    }
 
-            if (CanonicalDomainMiddleware.CanonicalDomains.Count > 0)
-            {
-                app.UseMiddleware<CanonicalDomainMiddleware> ();
-            }
-            else
-            {
-                warnForMissingConfig();
-            }
-        }
-        else
+    /// <summary>
+    /// Generate a warning if no configured domains were found
+    /// </summary>
+    /// <param name="app">The application builder</param>
+    private static void WarnForMissingConfig(IApplicationBuilder app)
+    {
+        var logger = GetService<ILogger<CanonicalDomainMiddleware>>(app);
+        if (logger is not null)
         {
-            warnForMissingConfig();
+            logger.LogWarning("No canonical domain configuration was found; no domains will be redirected");
         }
-        
-        return app;
     }
 }

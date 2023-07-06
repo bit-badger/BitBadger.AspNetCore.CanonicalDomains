@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 
 namespace BitBadger.AspNetCore.CanonicalDomains;
 
+/// <summary>
+/// Middleware to enforce canonical domains
+/// </summary>
 public class CanonicalDomainMiddleware
 {
     /// <summary>
@@ -26,12 +29,11 @@ public class CanonicalDomainMiddleware
 
     public async Task InvokeAsync(HttpContext ctx)
     {
-        var host = ctx.Request.Host.Host;
-        if (CanonicalDomains.ContainsKey(host))
+        if (CanonicalDomains.ContainsKey(ctx.Request.Host.Host))
         {
             UriBuilder uri = new(ctx.Request.GetDisplayUrl());
-            uri.Host = CanonicalDomains[host];
-            ctx.Response.Redirect(uri.Uri.ToString ());
+            uri.Host = CanonicalDomains[ctx.Request.Host.Host];
+            ctx.Response.Redirect(uri.Uri.ToString(), permanent: true);
         }
         else
         {
