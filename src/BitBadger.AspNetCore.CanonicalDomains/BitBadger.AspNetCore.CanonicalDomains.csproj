@@ -9,8 +9,9 @@
     <Authors>danieljsummers</Authors>
     <Company>Bit Badger Solutions</Company>
     <Description>ASP.NET Core middleware to enforce canonical domains</Description>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/bit-badger/BitBadger.AspNetCore.CanonicalDomains</PackageProjectUrl>
+    <PackageProjectUrl>https://bitbadger.solutions/open-source/canonical-domain-middleware/</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/bit-badger/BitBadger.AspNetCore.CanonicalDomains</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
